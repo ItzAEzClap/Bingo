@@ -32,7 +32,7 @@ const ACTIONS = {
 
 function createBingoBoard() {
     const min = getComputedStyle(document.body).getPropertyValue('--minSize');
-    const val = shuffle(VALUES);
+    const val = shuffle(VALUES).map(e => shuffle(e.split('')).join(''));
     let minFontSize = Infinity;;
     
     for (let i = 0; i < SIZE * SIZE; i++) {
@@ -93,7 +93,6 @@ function removeLine(fromX, fromY, toX, toY, direction) {
     }
 
     changeOpacity(fromX, fromY, direction, ACTIONS.REMOVE);
-    //checkBingo(, ACTIONS.ADD)
 };
 
 function addLine(fromX, fromY, toX, toY, direction) {
@@ -190,3 +189,62 @@ window.onload = () => {
 
     createBingoBoard();
 };
+
+
+window.onresize = () => {
+    // Font- & Mark size
+    let minFontSize = Infinity;
+    for (const child of board.children) {
+        minFontSize = Math.min(fitText(child), minFontSize)
+
+        const element = child.lastChild
+        if (!(element instanceof Image)) continue
+
+        const parentRect = child.getBoundingClientRect()
+        element.width = parentRect.width - 2
+        element.height = parentRect.height - 2
+    }
+
+    for (const child of board.children) child.style.fontSize = `${minFontSize}px`;
+
+    // Lines
+    for (const line of lineContainer.children) {
+        const [fromX, fromY, toX, toY] = line.getAttribute("path").split(", ").map(x => parseInt(x));
+        let direction;
+        if (fromX === toX) direction = DIRECTIONS.VERTICAL;
+        if (fromY === toY) direction = DIRECTIONS.HORIZONTAL;
+        if (fromX === 0 && fromY === 0 && toX === SIZE - 1 && toY === SIZE - 1) direction = DIRECTIONS.DIAGONAL_LEFT_TO_RIGHT;
+        if (fromX === 0 && fromY === SIZE - 1 && toX === SIZE - 1 && toY === 0) direction = DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT;
+
+        const start = board.children[fromX + fromY * SIZE];
+        const startRect = start.getBoundingClientRect();
+        const endRect = board.children[toX + toY * SIZE].getBoundingClientRect();
+        const rotateOffset = 14 * Math.SQRT1_2;
+        const offset = 2;
+
+        switch (direction) {
+            case DIRECTIONS.HORIZONTAL:
+                line.style.left = `${startRect.x}px`;
+                line.style.width = `${endRect.x - startRect.x + endRect.width}px`;
+                line.style.top = `${startRect.y + (startRect.height - parseInt(getComputedStyle(line).height)) / 2}px`;
+                break;
+            case DIRECTIONS.VERTICAL:
+                line.style.top = `${startRect.y}px`;
+                line.style.height = `${endRect.y - startRect.y + endRect.height}px`;
+                line.style.left = `${startRect.x + (startRect.width - parseInt(getComputedStyle(line).width)) / 2}px`;
+                break;
+            case DIRECTIONS.DIAGONAL_LEFT_TO_RIGHT:
+                console.log(startRect.x, rotateOffset)
+                line.style.top = `${startRect.y - offset}px`;
+                line.style.left = `${startRect.x + rotateOffset - offset}px`;
+                line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
+                break;
+            case DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT:
+                line.style.left = `${startRect.x + rotateOffset - offset}px`;
+                line.style.top = `${startRect.y + startRect.height - (getExtraHeight(start) / 2 + offset)}px`;
+                line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
+                break;
+            default: return
+        }
+    }
+}

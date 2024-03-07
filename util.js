@@ -21,8 +21,7 @@ function getExtraHeight(cell) {
     return padding + border;
 };
 
-function fitText(element) {
-    const maxFontSize = 100;
+function fitText(element, maxFontSize = 100) {
     let width = element.clientWidth;
     let contentWidth = element.scrollWidth;
     let height = element.clientHeight;
