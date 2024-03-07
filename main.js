@@ -32,7 +32,7 @@ const ACTIONS = {
 
 function createBingoBoard() {
     const min = getComputedStyle(document.body).getPropertyValue('--minSize');
-    const val = shuffle(VALUES).map(e => shuffle(e.split('')).join(''));
+    const val = shuffle(VALUES);
     let minFontSize = Infinity;;
     
     for (let i = 0; i < SIZE * SIZE; i++) {
