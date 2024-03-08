@@ -29,6 +29,7 @@ const ACTIONS = {
     ADD: 0,
     REMOVE: 1
 };
+const LOCALSTORAGEKEY = "bingo-bingo";
 let boardInfo;
 
 function createBingoBoard() {
@@ -60,7 +61,7 @@ function createBingoBoard() {
     }
 
         
-    localStorage.setItem("bingo-bingo", JSON.stringify(boardInfo))
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo))
     for (let child of board.children) {
         if (useStorageInfo) checkBingo(child, ACTIONS.ADD);
         child.style.fontSize = `${minFontSize}px`;
@@ -165,7 +166,7 @@ function addMark(element, fromLocalStorage = false) {
     if (fromLocalStorage) return;
     let idx = Array.from(board.children).indexOf(element);
     boardInfo.marked.push(idx);
-    localStorage.setItem("bingo-bingo", JSON.stringify(boardInfo));
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
 }
 
 function changeOpacity(fromX, fromY, direction, action) {
@@ -209,7 +210,7 @@ window.onmouseup = (e) => {
 };
 
 function getLocalStorage() {
-    let storage = localStorage.getItem("bingo-bingo");    
+    let storage = localStorage.getItem(LOCALSTORAGEKEY);    
 
     try { storage = JSON.parse(storage); }
     catch (error) { storage = {}; }
@@ -220,6 +221,12 @@ function getLocalStorage() {
     if (!storage.marked) storage.marked = [];
 
     return storage;
+}
+
+function clearLocalStorage() {
+    boardInfo.values = [];
+    boardInfo.marked = [];
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
 }
 
 window.onload = () => {
