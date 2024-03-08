@@ -29,12 +29,18 @@ const ACTIONS = {
     ADD: 0,
     REMOVE: 1
 };
+let boardInfo;
 
 function createBingoBoard() {
+    const useStorageInfo = boardInfo.values.length === SIZE * SIZE;
+    if (!useStorageInfo) {
+        boardInfo.values = [];
+        boardInfo.marked = [];
+    }
     const min = getComputedStyle(document.body).getPropertyValue('--minSize');
-    const val = shuffle(VALUES);
-    let minFontSize = Infinity;;
-    
+    const val = useStorageInfo ? boardInfo.values : shuffle(VALUES);
+    let minFontSize = Infinity;
+
     for (let i = 0; i < SIZE * SIZE; i++) {
         const cell = document.createElement("div");
         cell.setAttribute("checked", false);
@@ -48,9 +54,17 @@ function createBingoBoard() {
         cell.style.width = `calc(${cell.style.maxWidth} - ${getExtraWidth(cell)}px`;
         cell.style.height = `calc(${cell.style.maxHeight} - ${getExtraHeight(cell)}px)`;
         minFontSize = Math.min(fitText(cell), minFontSize);
+
+        if (useStorageInfo) { if (boardInfo.marked.includes(i)) addMark(cell, true); }
+        else boardInfo.values.push(val[i]);
     }
 
-    for (let child of board.children) child.style.fontSize = `${minFontSize}px`;
+        
+    localStorage.setItem("bingo-bingo", JSON.stringify(boardInfo))
+    for (let child of board.children) {
+        if (useStorageInfo) checkBingo(child, ACTIONS.ADD);
+        child.style.fontSize = `${minFontSize}px`;
+    }
 };
 
 function checkBingo(cell, action) {
@@ -142,6 +156,18 @@ function addLine(fromX, fromY, toX, toY, direction) {
     line.style.borderRadius = `${lineRect.width}px`;
 };
 
+function addMark(element, fromLocalStorage = false) {
+    const xImg = new Image();
+    xImg.src = "imgs/x-thin.png";
+    xImg.width = parseInt(getComputedStyle(element).width) + 20;
+    element.appendChild(xImg);
+
+    if (fromLocalStorage) return;
+    let idx = Array.from(board.children).indexOf(element);
+    boardInfo.marked.push(idx);
+    localStorage.setItem("bingo-bingo", JSON.stringify(boardInfo));
+}
+
 function changeOpacity(fromX, fromY, direction, action) {
     for (let i = 0; i < SIZE; i++) {
         let x = 0, y = 0;
@@ -163,33 +189,45 @@ function changeOpacity(fromX, fromY, direction, action) {
     }   
 }
 
-
+let selectedItem;
+window.onmousedown = (e) => selectedItem = e.srcElement
 window.onmouseup = (e) => {
-    if (e.srcElement.className !== "bingo-cell") return;
-
     const element = e.srcElement;
+    if (element.className !== "bingo-cell" || selectedItem !== element) return;
+
     if (element.getAttribute("checked") === "true") {
         element.removeChild(element.lastChild);
         checkBingo(element, ACTIONS.REMOVE);
         element.setAttribute("checked", "false");
     } else {
-        const xImg = new Image();
-        xImg.src = "imgs/x-thin.png";
-        xImg.width = (parseInt(getComputedStyle(element).width) + 20);
-        element.appendChild(xImg);
-
+        addMark(element);
         checkBingo(element, ACTIONS.ADD);
         element.setAttribute("checked", "true");
     }
+
+    selectedItem = undefined;
 };
+
+function getLocalStorage() {
+    let storage = localStorage.getItem("bingo-bingo");    
+
+    try { storage = JSON.parse(storage); }
+    catch (error) { storage = {}; }
+
+    console.log(storage)
+    if (!storage || storage.constructor.name !== "Object") storage = {};
+    if (!storage.values) storage.values = [];
+    if (!storage.marked) storage.marked = [];
+
+    return storage;
+}
 
 window.onload = () => {
     board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
-
+    boardInfo = getLocalStorage();
     createBingoBoard();
 };
-
 
 window.onresize = () => {
     // Font- & Mark size
