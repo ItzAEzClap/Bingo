@@ -164,7 +164,7 @@ function fixStyleLine(line, fromX, fromY, toX, toY, direction, RECURSIVE = true)
     }
 
     if (RECURSIVE) setTimeout(() => fixStyleLine(line, fromX, fromY, toX, toY, direction, false), 0);
-}
+};
 
 function addMark(element, fromLocalStorage = false) {
     const xImg = new Image();
@@ -176,7 +176,7 @@ function addMark(element, fromLocalStorage = false) {
     let idx = Array.from(board.children).indexOf(element);
     boardInfo.marked.push(idx);
     localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
-}
+};
 
 function changeOpacity(fromX, fromY, direction, action) {
     for (let i = 0; i < SIZE; i++) {
@@ -197,7 +197,27 @@ function changeOpacity(fromX, fromY, direction, action) {
             checkBingo(element.parentElement, ACTIONS.ADD);
         }
     }   
-}
+};
+
+function getLocalStorage() {
+    let storage = localStorage.getItem(LOCALSTORAGEKEY);    
+
+    try { storage = JSON.parse(storage); }
+    catch (error) { storage = {}; }
+
+    if (!storage || storage.constructor.name !== "Object") storage = {};
+    if (!storage.values) storage.values = [];
+    if (!storage.marked) storage.marked = [];
+
+    return storage;
+};
+
+function clearLocalStorage() {
+    boardInfo.values = [];
+    boardInfo.marked = [];
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
+    location.reload();
+};
 
 let selectedItem;
 window.onmousedown = (e) => selectedItem = e.srcElement
@@ -218,27 +238,6 @@ window.onmouseup = (e) => {
     selectedItem = undefined;
 };
 
-function getLocalStorage() {
-    let storage = localStorage.getItem(LOCALSTORAGEKEY);    
-
-    try { storage = JSON.parse(storage); }
-    catch (error) { storage = {}; }
-
-    console.log(storage)
-    if (!storage || storage.constructor.name !== "Object") storage = {};
-    if (!storage.values) storage.values = [];
-    if (!storage.marked) storage.marked = [];
-
-    return storage;
-}
-
-function clearLocalStorage() {
-    boardInfo.values = [];
-    boardInfo.marked = [];
-    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
-    location.reload();
-}
-
 window.onload = () => {
     board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
@@ -246,7 +245,6 @@ window.onload = () => {
     createBingoBoard();
     window.onresize();
 };
-
 
 window.onresize = () => {
     // Font- & Mark size
@@ -288,4 +286,4 @@ window.onresize = () => {
     const y2 = localStorage.getBoundingClientRect().y;
 
     if (y2 > y1) localStorage.style.top = `${y1}px`;
-}
+};
