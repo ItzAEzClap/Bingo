@@ -120,7 +120,7 @@ function addLine(fromX, fromY, toX, toY, direction) {
     changeOpacity(fromX, fromY, direction, ACTIONS.ADD);
 };
 
-function fixStyleLine(line, fromX, fromY, toX, toY, direction, again = true) {
+function fixStyleLine(line, fromX, fromY, toX, toY, direction, RECURSIVE = true) {
     const start = board.children[fromX + fromY * SIZE];
     const end = board.children[toX + toY * SIZE];
     const startRect = start.getBoundingClientRect();
@@ -162,6 +162,8 @@ function fixStyleLine(line, fromX, fromY, toX, toY, direction, again = true) {
             break;
         default: return
     }
+
+    if (RECURSIVE) setTimeout(() => fixStyleLine(line, fromX, fromY, toX, toY, direction, false), 0);
 }
 
 function addMark(element, fromLocalStorage = false) {
@@ -279,7 +281,7 @@ window.onresize = () => {
     const localStorage = document.getElementById("clear-localstorage");
     const localStorageRect = localStorage.getBoundingClientRect();
     const bottom = boardRect.y + boardRect.height;
-    
+
     localStorage.style.top = `calc(0.5 * (100vh + ${bottom - localStorageRect.height}px)`;
     const y1 = localStorage.getBoundingClientRect().y;
     localStorage.style.top = `calc(${bottom + boardRect.height / 5}px)`;
