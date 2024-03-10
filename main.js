@@ -131,7 +131,7 @@ function fixStyleLine(line, fromX, fromY, toX, toY, direction, RECURSIVE = true)
     line.style.height = `${boardRect.height / SIZE / 15}px`
     const lineRect = line.getBoundingClientRect();
     line.style.borderRadius = `${Math.min(lineRect.width, lineRect.height)}px`;
-    const rotateOffset = lineRect.height * Math.SQRT1_2;
+    const rotateOffset = lineRect.height * (Math.SQRT1_2 - 0.25);
 
     switch (direction) {
         case DIRECTIONS.HORIZONTAL:
@@ -154,7 +154,7 @@ function fixStyleLine(line, fromX, fromY, toX, toY, direction, RECURSIVE = true)
             break;
         case DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT:
             line.style.left = `${startRect.x + rotateOffset}px`;
-            line.style.top = `${startRect.y + startRect.height - getExtraHeight(start) * 0.5}px`;
+            line.style.top = `calc(100vh - ${board.children[0].getBoundingClientRect().y + lineRect.width / 2}px)`;
             line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset}px`;
 
             line.style.transformOrigin = "bottom left";
