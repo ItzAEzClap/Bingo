@@ -111,56 +111,63 @@ function removeLine(fromX, fromY, toX, toY, direction) {
 };
 
 function addLine(fromX, fromY, toX, toY, direction) {
-    const start = board.children[fromX + fromY * SIZE];
-    const startRect = start.getBoundingClientRect();
-    const endRect = board.children[toX + toY * SIZE].getBoundingClientRect();
     const line = document.createElement("div");
     line.className = "line";
     line.setAttribute("path", `${fromX}, ${fromY}, ${toX}, ${toY}`);
     lineContainer.appendChild(line);
+
+    fixStyleLine(line, fromX, fromY, toX, toY, direction);
+    changeOpacity(fromX, fromY, direction, ACTIONS.ADD);
+};
+
+function fixStyleLine(line, fromX, fromY, toX, toY, direction, again = true) {
+    const start = board.children[fromX + fromY * SIZE];
+    const end = board.children[toX + toY * SIZE];
+    const startRect = start.getBoundingClientRect();
+    const boardRect = board.getBoundingClientRect();
+    const endRect   = end.getBoundingClientRect();
     
+    line.style.width = `${boardRect.height / SIZE / 15}px`
+    line.style.height = `${boardRect.height / SIZE / 15}px`
     const lineRect = line.getBoundingClientRect();
+    line.style.borderRadius = `${Math.min(lineRect.width, lineRect.height)}px`;
     const rotateOffset = lineRect.height * Math.SQRT1_2;
-    const offset = 2;
 
     switch (direction) {
         case DIRECTIONS.HORIZONTAL:
             line.style.left = `${startRect.x}px`;
             line.style.width = `${endRect.x - startRect.x + endRect.width}px`;
-            line.style.top = `${startRect.y + (startRect.height - parseInt(getComputedStyle(line).height)) / 2}px`;
+            line.style.top = `${startRect.y + (startRect.height - lineRect.height) / 2}px`;
             break;
         case DIRECTIONS.VERTICAL:
             line.style.top = `${startRect.y}px`;
             line.style.height = `${endRect.y - startRect.y + endRect.height}px`;
-            line.style.left = `${startRect.x + (startRect.width - parseInt(getComputedStyle(line).width)) / 2}px`;
+            line.style.left = `${startRect.x + (startRect.width - lineRect.height) / 2}px`;
             break;
         case DIRECTIONS.DIAGONAL_LEFT_TO_RIGHT:
-            line.style.top = `${startRect.y - offset}px`;
-            line.style.left = `${startRect.x + rotateOffset - offset}px`;
-            line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
-           
+            line.style.top = `${startRect.y}px`;
+            line.style.left = `${startRect.x + rotateOffset}px`;
+            line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset}px`;
+
             line.style.transformOrigin = "top left";
             line.style.transform = "rotate(45deg)";
             break;
         case DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT:
-            line.style.left = `${startRect.x + rotateOffset - offset}px`;
-            line.style.top = `${startRect.y + startRect.height - (getExtraHeight(start) / 2 + offset)}px`;
-            line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
-            
+            line.style.left = `${startRect.x + rotateOffset}px`;
+            line.style.top = `${startRect.y + startRect.height - getExtraHeight(start) * 0.5}px`;
+            line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset}px`;
+
             line.style.transformOrigin = "bottom left";
             line.style.transform = "rotate(-45deg)";
             break;
         default: return
     }
-
-    changeOpacity(fromX, fromY, direction, ACTIONS.ADD);
-    line.style.borderRadius = `${lineRect.width}px`;
-};
+}
 
 function addMark(element, fromLocalStorage = false) {
     const xImg = new Image();
     xImg.src = "imgs/x-thin.png";
-    xImg.width = parseInt(getComputedStyle(element).width) + 20;
+    xImg.width = element.getBoundingClientRect().width;
     element.appendChild(xImg);
 
     if (fromLocalStorage) return;
@@ -227,6 +234,7 @@ function clearLocalStorage() {
     boardInfo.values = [];
     boardInfo.marked = [];
     localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
+    location.reload();
 }
 
 window.onload = () => {
@@ -234,7 +242,9 @@ window.onload = () => {
     board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
     boardInfo = getLocalStorage();
     createBingoBoard();
+    window.onresize();
 };
+
 
 window.onresize = () => {
     // Font- & Mark size
@@ -253,6 +263,7 @@ window.onresize = () => {
     for (const child of board.children) child.style.fontSize = `${minFontSize}px`;
 
     // Lines
+    const boardRect = board.getBoundingClientRect();
     for (const line of lineContainer.children) {
         const [fromX, fromY, toX, toY] = line.getAttribute("path").split(", ").map(x => parseInt(x));
         let direction;
@@ -261,35 +272,18 @@ window.onresize = () => {
         if (fromX === 0 && fromY === 0 && toX === SIZE - 1 && toY === SIZE - 1) direction = DIRECTIONS.DIAGONAL_LEFT_TO_RIGHT;
         if (fromX === 0 && fromY === SIZE - 1 && toX === SIZE - 1 && toY === 0) direction = DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT;
 
-        const start = board.children[fromX + fromY * SIZE];
-        const startRect = start.getBoundingClientRect();
-        const endRect = board.children[toX + toY * SIZE].getBoundingClientRect();
-        const rotateOffset = 14 * Math.SQRT1_2;
-        const offset = 2;
-
-        switch (direction) {
-            case DIRECTIONS.HORIZONTAL:
-                line.style.left = `${startRect.x}px`;
-                line.style.width = `${endRect.x - startRect.x + endRect.width}px`;
-                line.style.top = `${startRect.y + (startRect.height - parseInt(getComputedStyle(line).height)) / 2}px`;
-                break;
-            case DIRECTIONS.VERTICAL:
-                line.style.top = `${startRect.y}px`;
-                line.style.height = `${endRect.y - startRect.y + endRect.height}px`;
-                line.style.left = `${startRect.x + (startRect.width - parseInt(getComputedStyle(line).width)) / 2}px`;
-                break;
-            case DIRECTIONS.DIAGONAL_LEFT_TO_RIGHT:
-                console.log(startRect.x, rotateOffset)
-                line.style.top = `${startRect.y - offset}px`;
-                line.style.left = `${startRect.x + rotateOffset - offset}px`;
-                line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
-                break;
-            case DIRECTIONS.DIAGONAL_RIGHT_TO_LEFT:
-                line.style.left = `${startRect.x + rotateOffset - offset}px`;
-                line.style.top = `${startRect.y + startRect.height - (getExtraHeight(start) / 2 + offset)}px`;
-                line.style.width = `${(endRect.x - startRect.x + endRect.width) * Math.SQRT2 - rotateOffset + offset}px`;
-                break;
-            default: return
-        }
+        fixStyleLine(line, fromX, fromY, toX, toY, direction);
     }
+
+    // Clear-localstorage button position
+    const localStorage = document.getElementById("clear-localstorage");
+    const localStorageRect = localStorage.getBoundingClientRect();
+    const bottom = boardRect.y + boardRect.height;
+    
+    localStorage.style.top = `calc(0.5 * (100vh + ${bottom - localStorageRect.height}px)`;
+    const y1 = localStorage.getBoundingClientRect().y;
+    localStorage.style.top = `calc(${bottom + boardRect.height / 5}px)`;
+    const y2 = localStorage.getBoundingClientRect().y;
+
+    if (y2 > y1) localStorage.style.top = `${y1}px`;
 }
