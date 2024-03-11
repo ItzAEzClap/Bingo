@@ -172,13 +172,21 @@ function addMark(element, fromLocalStorage = false) {
     xImg.width = element.getBoundingClientRect().width;
     element.setAttribute("checked", "true");
     element.appendChild(xImg);
-    
 
     if (fromLocalStorage) return;
-    let idx = Array.from(board.children).indexOf(element);
+    const idx = Array.from(board.children).indexOf(element);
     boardInfo.marked.push(idx);
     localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
 };
+
+function removeMark(element) {
+    element.removeChild(element.lastChild);
+    element.setAttribute("checked", "false");
+
+    const idx = Array.from(board.children).indexOf(element);
+    boardInfo.marked = boardInfo.marked.filter(markedIdx => markedIdx !== idx);
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo))
+}
 
 function changeOpacity(fromX, fromY, direction, action) {
     for (let i = 0; i < SIZE; i++) {
@@ -228,9 +236,8 @@ window.onmouseup = (e) => {
     if (element.className !== "bingo-cell" || selectedItem !== element) return;
 
     if (element.getAttribute("checked") === "true") {
-        element.removeChild(element.lastChild);
+        removeMark(element);
         checkBingo(element, ACTIONS.REMOVE);
-        element.setAttribute("checked", "false");
     } else {
         addMark(element);
         checkBingo(element, ACTIONS.ADD);
