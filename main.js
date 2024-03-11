@@ -1,24 +1,9 @@
 const board = document.getElementById("bingo-board");
 const lineContainer = document.getElementById("line-container");
+const teacherInput = document.getElementById("teacher-list")
 const SIZE = 4;
-const VALUES = [
-    "Chattriga",
-    "Behöver rast",
-    "Skit",
-    "Hörni",
-    "Ser ni där bak?",
-    "Är detta tydligt ?",
-    "Stavning är inte min starka sida",
-    "Är det tillräckligt stort ?",
-    "Carina sa/Enligt Carina",
-    "Jag vet att den här genomgången redan är lång",
-    "Ändrar uppgiften",
-    "Fel formel",
-    "Lite längre lektion än vad jag tänkte mig",
-    "Lång tid dåligt förklarat",
-    "Motsäger sig själv",
-    "Öhh (3+ sek)",
-];
+const teacher = "Erik"
+const VALUES = phrases[teacher];
 const DIRECTIONS = {
     HORIZONTAL: 0,
     VERTICAL: 1,
@@ -30,16 +15,16 @@ const ACTIONS = {
     REMOVE: 1
 };
 const LOCALSTORAGEKEY = "bingo-bingo";
-let boardInfo;
+let bingoStorage;
 
 function createBingoBoard() {
-    const useStorageInfo = boardInfo.values.length === SIZE * SIZE;
+    const useStorageInfo = bingoStorage[teacher][SIZE].values.length === SIZE * SIZE;
     if (!useStorageInfo) {
-        boardInfo.values = [];
-        boardInfo.marked = [];
+        bingoStorage[teacher][SIZE].values = [];
+        bingoStorage[teacher][SIZE].marked = [];
     }
     const min = getComputedStyle(document.body).getPropertyValue('--minSize');
-    const val = useStorageInfo ? boardInfo.values : shuffle(VALUES);
+    const val = useStorageInfo ? bingoStorage[teacher][SIZE].values : shuffle(VALUES);
     let minFontSize = Infinity;
 
     for (let i = 0; i < SIZE * SIZE; i++) {
@@ -56,12 +41,12 @@ function createBingoBoard() {
         cell.style.height = `calc(${cell.style.maxHeight} - ${getExtraHeight(cell)}px)`;
         minFontSize = Math.min(fitText(cell), minFontSize);
 
-        if (useStorageInfo) { if (boardInfo.marked.includes(i)) addMark(cell, true); }
-        else boardInfo.values.push(val[i]);
+        if (useStorageInfo) { if (bingoStorage[teacher][SIZE].marked.includes(i)) addMark(cell, true); }
+        else bingoStorage[teacher][SIZE].values.push(val[i]);
     }
 
         
-    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo))
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(bingoStorage))
     for (let child of board.children) {
         if (useStorageInfo) checkBingo(child, ACTIONS.ADD);
         child.style.fontSize = `${minFontSize}px`;
@@ -175,8 +160,8 @@ function addMark(element, fromLocalStorage = false) {
 
     if (fromLocalStorage) return;
     const idx = Array.from(board.children).indexOf(element);
-    boardInfo.marked.push(idx);
-    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
+    bingoStorage[teacher][SIZE].marked.push(idx);
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(bingoStorage));
 };
 
 function removeMark(element) {
@@ -184,8 +169,8 @@ function removeMark(element) {
     element.setAttribute("checked", "false");
 
     const idx = Array.from(board.children).indexOf(element);
-    boardInfo.marked = boardInfo.marked.filter(markedIdx => markedIdx !== idx);
-    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo))
+    bingoStorage[teacher][SIZE].marked = bingoStorage[teacher][SIZE].marked.filter(markedIdx => markedIdx !== idx);
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(bingoStorage))
 }
 
 function changeOpacity(fromX, fromY, direction, action) {
@@ -216,16 +201,17 @@ function getLocalStorage() {
     catch (error) { storage = {}; }
 
     if (!storage || storage.constructor.name !== "Object") storage = {};
-    if (!storage.values) storage.values = [];
-    if (!storage.marked) storage.marked = [];
+    if (!storage[teacher]) storage[teacher] = {};
+    if (!storage[teacher][SIZE]) storage[teacher][SIZE] = {};
+    if (!storage[teacher][SIZE].marked) storage[teacher][SIZE].marked = [];
+    if (!storage[teacher][SIZE].values) storage[teacher][SIZE].values = [];
 
     return storage;
 };
 
 function clearLocalStorage() {
-    boardInfo.values = [];
-    boardInfo.marked = [];
-    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(boardInfo));
+    bingoStorage[teacher] = {};
+    localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(bingoStorage));
     location.reload();
 };
 
@@ -249,7 +235,7 @@ window.onmouseup = (e) => {
 window.onload = () => {
     board.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
     board.style.gridTemplateRows = `repeat(${SIZE}, 1fr)`;
-    boardInfo = getLocalStorage();
+    bingoStorage = getLocalStorage();
     createBingoBoard();
     window.onresize();
 };
