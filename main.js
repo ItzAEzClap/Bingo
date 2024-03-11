@@ -170,7 +170,9 @@ function addMark(element, fromLocalStorage = false) {
     const xImg = new Image();
     xImg.src = "imgs/x-thin.png";
     xImg.width = element.getBoundingClientRect().width;
+    element.setAttribute("checked", "true");
     element.appendChild(xImg);
+    
 
     if (fromLocalStorage) return;
     let idx = Array.from(board.children).indexOf(element);
@@ -232,7 +234,6 @@ window.onmouseup = (e) => {
     } else {
         addMark(element);
         checkBingo(element, ACTIONS.ADD);
-        element.setAttribute("checked", "true");
     }
 
     selectedItem = undefined;
