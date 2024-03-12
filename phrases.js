@@ -1,4 +1,4 @@
-const phrases = {
+const PHRASES = {
     "Erik": [
         "Chattriga",
         "Behöver rast",
@@ -17,5 +17,5 @@ const phrases = {
         "Motsäger sig själv",
         "Öhh (3+ sek)",
     ],
-    "Ali": ""
+    "Ali": []
 }

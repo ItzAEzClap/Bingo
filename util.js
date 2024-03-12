@@ -35,10 +35,7 @@ function fitText(element, maxFontSize = 100) {
         else fontSize--;
 
         element.style.fontSize = `${fontSize}px`;
-        return fontSize;
-    }
-
-    while (true) {
+    } else while (true) {
         fontSize = Math.min(fontSize + 1, maxFontSize)
         element.style.fontSize = `${fontSize}px`;
 

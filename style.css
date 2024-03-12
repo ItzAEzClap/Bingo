@@ -70,7 +70,7 @@ img {
 #clear-localstorage {
     /* Position */
     position: absolute;
-    top: calc(100% - 2.5rem);
+    top: 80%;
     left: 50%;
     transform: translateX(-50%);
 
