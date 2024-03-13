@@ -67,7 +67,7 @@ img {
     pointer-events: none;
 }
 
-#clear-localstorage {
+#clear-board {
     /* Position */
     position: absolute;
     top: 80%;
@@ -84,11 +84,11 @@ img {
     border-bottom: 2px solid black;
 }
 
-#clear-localstorage:hover {
+#clear-board:hover {
     outline: 1px solid black;
 }
 
-#clear-localstorage:active {
+#clear-board:active {
     border-bottom: 0px;
     translate: 0px 2px;
 }

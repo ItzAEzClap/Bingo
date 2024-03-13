@@ -211,13 +211,14 @@ function getLocalStorage() {
     if (!storage[teacher][size].values) storage[teacher][size].values = [];
 
     return storage;
-};
+}
 
-function clearLocalStorage() {
-    bingoStorage[teacher] = {};
+function clearBoard() {
+    bingoStorage[teacher][size] = { marked: [], values: [] };
     localStorage.setItem(LOCALSTORAGEKEY, JSON.stringify(bingoStorage));
-    location.reload();
-};
+    while (lineContainer.firstChild) lineContainer.removeChild(lineContainer.firstChild);
+    createBingoBoard();
+}
 
 function resizeElements() {
     // Font- & Mark size
@@ -248,9 +249,9 @@ function resizeElements() {
         fixStyleLine(line, fromX, fromY, toX, toY, direction);
     }
 
-    // Clear-localstorage button position
+    // Clear-board button position
     const boardRect = board.getBoundingClientRect();
-    const localStorage = document.getElementById("clear-localstorage");
+    const localStorage = document.getElementById("clear-board");
     const localStorageRect = localStorage.getBoundingClientRect();
     const bottom = boardRect.y + boardRect.height;
 
